@@ -67,14 +67,28 @@ function M.setup(user_config)
     end
 
     if config.enable_prettify_selection then
-        vim.api.nvim_set_keymap("v", config.custom_keymaps.visual_mode, "", {
+        vim.api.nvim_set_keymap("v", config.custom_keymaps.visual_mode, ":'<,'>YewPrettifySelection<CR>", {
             noremap = true,
-            silent = false,
-            callback = prettify_selection,
+            silent = true,
         })
 
-        vim.api.nvim_create_user_command("YewPrettifySelection", prettify_selection,
-            { desc = "Prettify selected yew HTML block" })
+
+        vim.api.nvim_create_user_command(
+            "YewPrettifySelection",
+            function(opts)
+                if opts.range == 0 then
+                    vim.notify("No range provided. Use :'<,'>YewPrettifySelection or specify a range.",
+                        vim.log.levels.ERROR)
+                    return
+                end
+
+                prettify_selection(opts.line1, opts.line2) -- Pass the range to prettify_range
+            end,
+            {
+                range = true, -- Enable range support
+                desc = "Prettify selected Yew HTML block",
+            }
+        )
     end
 
 

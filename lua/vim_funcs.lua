@@ -7,45 +7,45 @@ local function vim_funcs_module(deps)
         return s:match("^%s*(.-)%s*$")
     end
 
-    local function prettify_selection()
-        -- Ensure we are in visual mode and line-wise selection
-        local mode = vim.fn.visualmode()
-        if mode ~= 'V' then
-            vim.notify("Please use line-wise visual mode (V) to prettify the selection.", vim.log.levels.INFO)
+    local function prettify_selection(start_line, end_line)
+        if not start_line or not end_line or start_line < 1 or end_line < start_line then
+            vim.notify(
+                string.format("Invalid line range: start_line=%s, end_line=%s", tostring(start_line), tostring(end_line)),
+                vim.log.levels.ERROR
+            )
             return
         end
 
-        -- Yank the visual selection into register 'v'
-        vim.cmd('normal! "vy')
+        -- Adjust for 0-based indexing required by Neovim API
+        local start_idx = start_line - 1
+        local end_idx = end_line
 
-        -- Get the content of register 'v'
-        local input = vim.fn.getreg('v')
+        -- Get the lines from the buffer
+        local lines = vim.api.nvim_buf_get_lines(0, start_idx, end_idx, false)
+        if not lines or #lines == 0 then
+            vim.notify("No lines found in the specified range.", vim.log.levels.WARN)
+            return
+        end
 
-        -- Parse and prettify the selected block only
+        local input = table.concat(lines, "\n")
+
+        -- Parse and prettify
         local success, ast = pcall(parser, input)
         if not success or not ast then
-            vim.notify("Failed to parse HTML in the selection. Skipping prettification.", vim.log.levels.ERROR)
+            vim.notify("Failed to parse HTML in the specified range. Skipping prettification.", vim.log.levels.ERROR)
             return
         end
 
         local prettifiedHTML = generatePrettifiedHTML(ast, config.tab_size, config.tab_size)
 
-        if prettifiedHTML and prettifiedHTML ~= '' then
-            -- Get the correct start and end lines of the visual selection
-            local start_line = math.min(vim.fn.line("'<"), vim.fn.line("'>"))
-            local end_line = math.max(vim.fn.line("'<"), vim.fn.line("'>"))
+        if prettifiedHTML and prettifiedHTML ~= "" then
+            -- Split prettified HTML into lines
+            local prettified_lines = vim.fn.split(prettifiedHTML, "\n")
 
-            -- Adjust indices for 0-based indexing
-            local start_idx = start_line - 1
-            local end_idx = end_line
+            -- Replace the original range with prettified lines
+            vim.api.nvim_buf_set_lines(0, start_idx, end_idx, false, prettified_lines)
 
-            -- Split the prettified HTML into lines
-            local lines = vim.fn.split(prettifiedHTML, '\n')
-
-            -- Replace the selected lines in the buffer
-            vim.api.nvim_buf_set_lines(0, start_idx, end_idx, false, lines)
-
-            -- Move the cursor to the start of the replaced text
+            -- Move the cursor to the start of the replaced range
             vim.api.nvim_win_set_cursor(0, { start_line, 0 })
         else
             vim.notify("Prettified HTML is empty. Skipping replacement.", vim.log.levels.WARN)
