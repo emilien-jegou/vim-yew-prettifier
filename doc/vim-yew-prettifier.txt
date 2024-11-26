@@ -1,0 +1,88 @@
+vim-yew-prettifier.txt    Plugin to prettify Yew code blocks in Rust |vim-yew-prettifier|
+
+==============================================================================
+CONTENTS                                                  *vim-yew-prettifier*
+
+1. Introduction ....................................... |vim-yew-prettifier-intro|
+2. Configuration ...................................... |vim-yew-prettifier-config|
+3. Commands ........................................... |vim-yew-prettifier-commands|
+4. Keybindings ........................................ |vim-yew-prettifier-keybindings|
+5. API ................................................ |vim-yew-prettifier-api|
+
+==============================================================================
+
+INTRODUCTION                                              *vim-yew-prettifier-intro*
+
+vim-yew-prettifier is a Neovim plugin designed to prettify Yew code blocks in
+Rust files. It automatically formats embedded HTML-like syntax within Yew
+blocks, making your code more readable and consistent.
+
+==============================================================================
+
+CONFIGURATION                                             *vim-yew-prettifier-config*
+
+The plugin provides several options that can be customized via the `setup` function:
+
+Default configuration:
+>
+    require("yew_prettifier").setup({
+        tab_size = 4,              -- Indentation size for prettification
+        max_line_width = nil,      -- Maximum line width for inlined blocks
+                                   --   nil: Use file's word wrap
+                                   --   0: Never inline
+        custom_keymaps = {
+            visual_mode = "go",    -- Keybinding for visual mode prettification
+            normal_mode = "go",    -- Keybinding for lookahead prettification
+        },
+        enable_prettify_selection = true, -- Enable visual mode prettification
+        enable_prettify_lookahead = true, -- Enable normal mode lookahead prettification
+    })
+<
+
+==============================================================================
+
+COMMANDS                                                  *vim-yew-prettifier-commands*
+
+The plugin provides the following commands:
+
+|:YewPrettifySelection|    Prettify the currently selected Yew HTML block in visual mode.
+|:YewPrettifyNext|         Prettify the next Yew HTML block in normal mode.
+
+==============================================================================
+
+KEYBINDINGS                                               *vim-yew-prettifier-keybindings*
+
+By default, the following keybindings are set:
+
+- Visual Mode:
+  - `go`: Prettify the selected block.
+- Normal Mode:
+  - `go`: Prettify the next Yew block.
+
+These keybindings can be customized in the `setup` function via `custom_keymaps`.
+
+==============================================================================
+
+API                                                       *vim-yew-prettifier-api*
+
+The following functions are exposed for programmatic use:
+
+|yew_prettifier.yew_prettify_html(input)|:
+    Prettifies a given HTML string and returns the formatted result.
+
+|yew_prettifier.prettify_selection()|:
+    Prettifies the currently selected block in visual mode.
+
+|yew_prettifier.prettify_lookahead()|:
+    Prettifies the next Yew HTML block in normal mode.
+
+==============================================================================
+
+AUTHOR                                                    *vim-yew-prettifier-author*
+
+Created by EmilienJ (https://github.com/emilien-jegou)
+
+Report issues or contribute: https://github.com/emilien-jegou/vim-yew-prettifier
+
+==============================================================================
+
