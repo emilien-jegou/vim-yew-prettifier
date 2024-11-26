@@ -1,0 +1,3 @@
+# This file get generated when the plugin is installed through absolute path
+# with lazy.nvim
+doc/tags
