@@ -67,6 +67,7 @@ Depending on the project popularity I may revisit how the AST parser get built
 so that some of thoses pitfall get fixed, but for the time being you may face
 the limitation and bugs stated below.
 - This plugin do not prettify nested code block, only html tags will get prettified
+- Will delete comments starting with '//' in blocks, use '/**/' instead
 - Multiline strings containing brackets characters may create indentation issues, such as the following:
 ```rust
 html! {
