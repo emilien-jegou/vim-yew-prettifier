@@ -84,7 +84,6 @@ local function vim_funcs_module(deps)
         -- Restore initial cursor if no match was found
         if not start_line or not start_col then
             vim.fn.setpos(".", initial_cursor)
-            vim.notify("No `html!` block found in current file", vim.log.levels.ERROR)
             return nil
         end
 
@@ -100,7 +99,9 @@ local function vim_funcs_module(deps)
     local function prettify_lookahead()
         -- Find the starting position of the `html!` block
         local start_line, start_col, indent_start = find_html_block_start()
+
         if not start_line or not start_col or not indent_start then
+            vim.notify("No `html!` block found in current file", vim.log.levels.ERROR)
             return
         end
 
@@ -112,20 +113,16 @@ local function vim_funcs_module(deps)
 
         -- Check if both `{` and `}` are on the same line
         -- `{` and `}` are on the same line, use feedkeys to replace content
-        vim.cmd("normal! vi{") -- Visually select the inner block
+        vim.cmd("normal! va{") -- Visually select the inner block
         vim.cmd('normal! "vy') -- Yank the selected block into register 'v'
 
         -- Get the yanked content
         local block_content = vim.fn.getreg("v")
 
-        -- If the html block is empty then "vi{" will capture the external bracket,
-        -- we can just skip further processing when that's the case
-        if block_content == "{" then
-            return
-        end
+        local trimmed_content = trim(block_content:match("^{([%s%S]-)}$"))
 
         -- Process the content (e.g., prettify)
-        local success, ast = pcall(parser, block_content)
+        local success, ast = pcall(parser, trimmed_content)
         if not success or not ast then
             vim.notify("Failed to parse HTML block", vim.log.levels.ERROR)
             return
@@ -155,9 +152,14 @@ local function vim_funcs_module(deps)
                 prettified_html = '{\n' .. prettified_html .. indent_s .. '}'
             end
 
+            if block_content == prettified_html then
+                vim.notify("Block is already prettified, skipping.", vim.log.levels.INFO)
+                return
+            end
+
             vim.fn.setreg('"', prettified_html)
 
-            -- NOTE: This code handle cases where there is trailing character
+            -- NOTE: This code handle cases where there is a trailing character
             -- such as a comma after the block e.g. 'html! {..}' vs 'html! {..},'
             vim.cmd([[
               normal! "_da{
