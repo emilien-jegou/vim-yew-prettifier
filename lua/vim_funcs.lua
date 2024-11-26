@@ -16,9 +16,11 @@ local function vim_funcs_module(deps)
             return
         end
 
+
         -- Adjust for 0-based indexing required by Neovim API
         local start_idx = start_line - 1
         local end_idx = end_line
+
 
         -- Get the lines from the buffer
         local lines = vim.api.nvim_buf_get_lines(0, start_idx, end_idx, false)
@@ -36,7 +38,11 @@ local function vim_funcs_module(deps)
             return
         end
 
-        local prettifiedHTML = generatePrettifiedHTML(ast, config.tab_size, config.tab_size)
+        -- Determine the current indent level (number of spaces) of the first line
+        local first_line = vim.api.nvim_buf_get_lines(0, start_idx, start_idx + 1, false)[1] or ""
+        local current_indent = #first_line:match("^%s*") -- Match leading spaces and count their length
+
+        local prettifiedHTML = generatePrettifiedHTML(ast, current_indent, config.tab_size)
 
         if prettifiedHTML and prettifiedHTML ~= "" then
             -- Split prettified HTML into lines
