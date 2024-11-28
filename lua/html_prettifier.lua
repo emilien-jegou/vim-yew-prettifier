@@ -58,10 +58,17 @@ function generatePrettifiedHTMLInner(node, indentLevel, indentSpaces)
             local closingTag = "</" .. tagName .. ">"
             totalInlineWidth = totalInlineWidth + #closingTag -- Add the closing tag length
 
+            local concatedHTML = table.concat(childrenHTML, " ")
+
+            -- If the block total width depass 60 (without indentation) then we rather have it on a new line
+            if #concatedHTML + #openingTag + #closingTag + 2 > 60 then
+                forceBlock = true
+            end
+
             -- Inline or block format
             if not forceBlock then
                 html = html ..
-                    indent .. openingTag .. " " .. table.concat(childrenHTML, " ") .. " " .. closingTag .. "\n"
+                    indent .. openingTag .. " " .. concatedHTML .. " " .. closingTag .. "\n"
             else
                 html = html .. indent .. openingTag .. "\n"
                 for _, childHTML in ipairs(childrenHTML) do
@@ -73,7 +80,7 @@ function generatePrettifiedHTMLInner(node, indentLevel, indentSpaces)
     elseif node.type == "Fragment" then
         -- Handle fragment nodes
         local fragmentChildren = {}
-        local totalInlineWidth = 2 -- Account for `<>` and `</>`
+        local totalInlineWidth = 2
         local forceBlock = false
 
         for _, child in ipairs(node.children) do
