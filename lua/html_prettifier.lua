@@ -60,8 +60,9 @@ function generatePrettifiedHTMLInner(node, indentLevel, indentSpaces)
 
             local concatedHTML = table.concat(childrenHTML, " ")
 
-            -- If the block total width depass 60 (without indentation) then we rather have it on a new line
-            if #concatedHTML + #openingTag + #closingTag + 2 > 60 then
+            -- If the block total width depass 70 (without indentation) then
+            -- we rather have it on a new line
+            if #concatedHTML + #openingTag + #closingTag + 2 > 70 then
                 forceBlock = true
             end
 
